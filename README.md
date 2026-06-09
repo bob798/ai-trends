@@ -46,7 +46,7 @@
 
 | 主题 | 包含 signals | 状态 |
 |------|------------|------|
-| [AI-Native Org](themes/ai-native-org.md) | 3 | draft |
+| [AI-Native Org](themes/ai-native-org.md) | 3 | published |
 
 ## 如何贡献 / 反馈
 
