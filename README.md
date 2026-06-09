@@ -36,6 +36,16 @@
 | 日期 | 标题 | 强度 | 来源 |
 |------|------|------|------|
 | 2026-06-03 | [How to Build an AI-Native Services Company](signals/2026-06-03-yc-ai-native-services.md) | strong | YC Startup Podcast |
+| 2026-05-27 | [How To Build Superintelligence Inside Your Company](signals/2026-05-27-yc-superintelligence-inside.md) | strong | YC Lightcone Podcast |
+| 2025-04 | [AI Horseless Carriages (Pete Koomen)](signals/2025-04-koomen-horseless-carriages.md) | strong | koomen.dev |
+
+## 主题（Themes）
+
+当多条 signal 聚向同一个主题时，会在 `themes/` 下产出聚合分析。
+
+| 主题 | 包含 signals | 状态 |
+|------|------------|------|
+| [AI-Native Org](themes/ai-native-org.md) | 3 | draft |
 
 ## 如何贡献 / 反馈
 
