@@ -11,9 +11,29 @@ signal_strength: strong
 status: published
 ---
 
+> 📍 **本文视角**：从「产业范式」角度读 Fable/Mythos 5 ——把发布**形态变化**反推为行业拐点信号。**不是**模型评测、**不是**发布新闻。要"该不该换 Fable 5 / 跑分多少"的答案，请直接看 [Anthropic 原文](https://www.anthropic.com/news/claude-fable-5-mythos-5) 或第三方榜。
+>
+> **适合的读者**：做战略选型、威胁建模、产品形态判断的人。
+
 # 一句话核心
 
 > **Anthropic 同时发布 Fable 5 与 Mythos 5——"同一底层模型，后者在部分领域解除护栏"——这是前沿实验室第一次把"安全护栏"从模型的内嵌属性外化为独立的产品 SKU 维度。"双 SKU 发布"正在成为新的发布范式。**
+
+# 模型基本盘（速览）
+
+> 给没追踪 Anthropic 这次发布的读者**最小必要 context**——**不是模型评测**。完整能力清单 / demo 见 [原文](https://www.anthropic.com/news/claude-fable-5-mythos-5)。下面的结构性分析建立在这个基础上。
+
+|  | **Fable 5** | **Mythos 5** |
+|---|---|---|
+| **一句话定位** | 编码 / 复杂任务旗舰，带安全护栏 | 同底层模型，"在部分领域解除护栏" |
+| **厂商自报亮点** | FrontierCode / CursorBench / FrontierBench 跑分领先；从原始截图通关 Pokémon FireRed（无地图、无 game state）；从第一性原理推导太阳系轨道、预测日食 | "It has the strongest cybersecurity capabilities of any model in the world." 擅长发现并利用软件漏洞 |
+| **公开访问** | 即用 | 访问门槛未公开 |
+| **未披露** | 参数量、训练数据 cutoff、推理延迟 | access gate 细节、出口管制条款、可用司法管辖区 |
+| **发布日** | 2026-06-09 | 2026-06-09（同日） |
+
+**复核窗口**：所有跑分均第一方口径，需等 30 天 LMSYS Arena / SWE-bench Verified / Aider 第三方榜更新后回看（详见末尾元信息）。
+
+---
 
 # 为什么这是个信号
 
