@@ -1,4 +1,4 @@
-# FDE Sandbox — MVP
+# FDE Sandbox
 
 A learning product for people who want to become **Forward Deployed Engineers** (FDE) —
 the hottest, highest-paid role in AI right now. Everyone else *explains* the role;
@@ -6,30 +6,35 @@ this makes you **practice** it.
 
 ## The wedge
 
-FDE postings are up 700%+ YoY; mid-level comp ~$385K. The reason the role exists:
-**~95% of enterprise AI pilots die at the "last mile"** — the gap between a clean
-demo and a live customer system with messy data and a flaky API. You can't learn
-that from a video, so this isn't a course — it's a **simulator**.
+FDE postings are up 700%+ YoY; mid-level total comp ~$385K. The reason the role
+exists: **~95% of enterprise AI pilots die at the "last mile"** — the gap between
+a clean demo and a live customer system with messy data and a flaky API. You can't
+learn that from a video, so this isn't a course — it's a **simulator**.
 
-## What's in this MVP: the killer sandbox level
+## What's in this version (v0.2 — usable)
 
-**Level 1 · "Dirty Data RAG — The Last Mile"** (`/sandbox`)
+### Three engagements (`/sandbox`)
 
-You're embedded with Acme Logistics' support team. The challenge compresses the
-hardest real FDE moment into one exercise:
+| # | Level | The compressed FDE moment |
+|---|-------|---------------------------|
+| 1 | **Dirty Data RAG — The Last Mile** | Vague ask + filthy 2k-row ticket export (dupes, 4 date formats, PII, spam, Spanish) + rate-limited key-rotating API |
+| 2 | **The Refund Bot vs. The Legacy API** | Real money. 2009 SOAP docs, undocumented ApprovalCode, sandbox ≠ prod, no idempotency keys, Finance audits everything |
+| 3 | **It Worked in the Demo** | Production incident: your legal RAG hallucinated a precedent. Diagnose from the retrieval trace + metrics, mitigate today, prove it's fixed |
 
-1. **A vague ask** — the Head of Support sends one hand-wavy Slack message.
-2. **Messy data** — a support-ticket export with exact duplicates, 4 date formats
-   (incl. a raw unix timestamp), empty/spam/mis-routed rows, inline PII, and
-   non-English bodies.
-3. **A flaky production API** — rate-limited (429 on burst), a daily-rotating auth
-   key, occasional 504s, no pagination.
-
-You answer three boxes that mirror the real job — **scope the ask · handle the
-data + pipeline · survive production** — then **Claude grades you in two voices**:
-the skeptical customer (Dana) and a senior FDE reviewer, scoring whether your work
-would survive production, not whether the demo runs. You get a score, per-dimension
+Each level: scope the ask · handle the mess · survive production → **Claude grades
+in two voices** (the skeptical customer + a senior FDE reviewer): score, per-dimension
 feedback, red flags, and a **résumé-ready portfolio line**.
+
+### Around the levels
+
+- **Progress & drafts** — saved in localStorage (no account); best score + attempts
+  per level; answers autosave as you type.
+- **Portfolio** (`/portfolio`) — best results rendered as résumé-ready markdown;
+  copy or download `.md`.
+- **Market page** (`/market`) — FDE comp by level, demand stats, who's hiring,
+  with sources. The SEO / top-of-funnel page.
+- **Email capture** (`/api/subscribe`) — appends to `data/subscribers.jsonl`
+  (gitignored). Swap for a real ESP before launch traffic.
 
 ## Run it
 
@@ -41,9 +46,9 @@ npm run dev          # http://localhost:3000
 ### Grading
 
 - **With `ANTHROPIC_API_KEY` set** → real grading by Claude (`claude-opus-4-8`),
-  playing the dual customer + senior-FDE reviewer persona.
-- **Without a key** → a deterministic heuristic grader runs so the whole flow is
-  demoable offline. Set the key for the real experience:
+  playing the dual customer + senior-FDE reviewer persona per scenario.
+- **Without a key** → a deterministic per-scenario heuristic grader (keyword
+  checks against each level's traps) so the whole flow is demoable offline.
 
 ```bash
 export ANTHROPIC_API_KEY=sk-ant-...
@@ -52,24 +57,35 @@ npm run dev
 
 ## Stack
 
-- Next.js 15 (App Router) + React 19 + TypeScript + Tailwind v4
-- `@anthropic-ai/sdk` — grading via `/api/grade` (Node runtime), `claude-opus-4-8`
-  with adaptive thinking, JSON-only structured review output, mock fallback.
+Next.js 15 (App Router) + React 19 + TypeScript + Tailwind v4 + `@anthropic-ai/sdk`.
 
 ## Layout
 
 ```
 app/
-  page.tsx              landing (the pitch + CTA)
-  sandbox/page.tsx      the level: ask + data + API contract + 3 answers + result
-  api/grade/route.ts    POST → grade (Claude, falls back to heuristic)
+  page.tsx               landing (pitch + level cards + market link)
+  layout.tsx             shared nav (Engagements / Market / Portfolio)
+  sandbox/page.tsx       level list with per-level progress
+  sandbox/[id]/page.tsx  level player (renders any scenario; autosaves drafts)
+  market/page.tsx        salary dashboard + hiring companies + email capture
+  portfolio/page.tsx     best results → markdown export
+  api/grade/route.ts     POST {levelId, scope, approach, production} → Grade
+  api/subscribe/route.ts POST {email} → data/subscribers.jsonl
 lib/
-  scenario.ts           the scenario data (Slack msg, messy tickets, API contract)
-  grader.ts             Claude grader (dual persona) + heuristic fallback
+  scenarios.ts           the 3 scenarios (artifacts, prompts, grader briefs, mock checks)
+  grader.ts              scenario-aware Claude grader + heuristic fallback
+  progress.ts            localStorage progress + draft autosave
 ```
 
-## What's deliberately NOT in the MVP (next)
+## Verified
 
-- A real in-browser code sandbox (WebContainer/cloud) so candidates *run* the pipeline.
-- More levels (the flaky-legacy-API level, the modeling level).
-- Salary dashboard + FDE job radar (SEO/top-of-funnel), saved progress, portfolio export.
+- `npm run build` clean; all 7 routes render (200).
+- Grading differentiates per level (strong ≈ 90 shipped / weak ≈ 35-40 rejected
+  with red flags) in heuristic mode; Claude mode adds calibrated in-character review.
+- Unknown level → 404; short submissions → 400; subscribe validates email and persists.
+
+## Next (not in this version)
+
+- Real in-browser code sandbox (WebContainer) so candidates *run* the pipeline.
+- Accounts + server-side progress; Stripe for the paid tier ($29-49/mo full access).
+- Job radar with live FDE listings; mock-interview mode.
