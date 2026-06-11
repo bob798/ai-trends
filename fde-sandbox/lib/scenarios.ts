@@ -447,7 +447,117 @@ Penalize: blaming the model and stopping there, "fine-tune it" hand-waving, same
   },
 };
 
-export const SCENARIOS: Scenario[] = [level1, level2, level3];
+// ---------------------------------------------------------------------------
+// LEVEL 0 — The Discovery Call (warm-up: pick the wedge before any code)
+// ---------------------------------------------------------------------------
+
+const level0: Scenario = {
+  id: "discovery-call",
+  title: "The Discovery Call",
+  tagline:
+    "Before any code: 30 minutes with a customer who wants 'AI for everything'. Pick the wedge.",
+  difficulty: "warm-up",
+  customer: "Brightline Property Group",
+  role: "Your firm sold Brightline a 6-week AI pilot. Tomorrow you get 30 minutes with the COO to figure out what to actually build.",
+  slack: {
+    from: "Theresa Mun — COO",
+    avatar: "TM",
+    text: "Looking forward to tomorrow! Leadership brainstormed where AI could help: a chatbot for tenants, auto-summarizing lease agreements, predicting maintenance issues before they happen, AI for our accounting close, and marketing content. Honestly we're open to all of it. Budget's approved — we just want something real to show the board this quarter.",
+  },
+  artifacts: [
+    {
+      kind: "doc",
+      label: "your prep notes · what you know about Brightline",
+      title: "Account notes (from the sales handoff)",
+      lines: [
+        "Manages 90 residential buildings, ~40,000 tenants, 12-person support team.",
+        "Maintenance requests arrive by email + phone; logged by hand into spreadsheets. ~600/week.",
+        "Average first-response time on maintenance requests: 48 hours. Top tenant complaint.",
+        "Lease agreements: scanned PDFs (some 15+ years old) in SharePoint. OCR quality unknown.",
+        "Accounting runs on Yardi. IT is one sysadmin + an MSP contract.",
+        "No data team. No sensor data from buildings (so nothing to 'predict' from yet).",
+        "COO is sharp but non-technical; board wants a visible win this quarter.",
+      ],
+    },
+    {
+      kind: "log",
+      label: "sample · the maintenance inbox (this morning)",
+      lines: [
+        "07:42 from unit 14B Maplewood: 'heat not working AGAIN, third email this week, I have a baby here'",
+        "08:15 from unit 3F Dockside: 'garbage disposal makes a grinding noise'",
+        "08:31 voicemail transcript: 'hi yeah the elevator in building C is stuck on 4 again'",
+        "08:55 from unit 22A Maplewood: 'following up on my email from last Tuesday??'",
+        "09:10 from broker@partnerrealty: 'is unit 9C available for showing thursday' (mis-routed)",
+      ],
+    },
+  ],
+  prompts: {
+    scope: {
+      label: "1 — Run the discovery",
+      hint: "You get 30 minutes with Theresa. What are the five questions you ask, and what is each one designed to find out? (Good FDE questions probe volume, pain, data availability, and who owns the workflow — not 'what AI do you want?')",
+      placeholder:
+        "Q1: ... (finds out: ...)\nQ2: ... (finds out: ...)\n...",
+    },
+    approach: {
+      label: "2 — Pick the wedge",
+      hint: "Six weeks, one pilot, a board that wants a visible win. Which ONE use case do you pick, and why? Just as important: why NOT each of the others (for now)? Use the account notes — data reality beats idea quality.",
+      placeholder:
+        "The wedge: ...\nWhy this one: ...\nWhy not the others (each): ...",
+    },
+    production: {
+      label: "3 — Define the pilot",
+      hint: "Turn the wedge into a 6-week pilot Theresa can sell to her board: measurable success criteria with a baseline, what you need from Brightline (data, access, people), week-by-week shape, and the expectation you set about what the AI won't do.",
+      placeholder:
+        "Success criteria & baseline: ...\nWhat I need from Brightline: ...\nTimeline: ...\nExpectations I set: ...",
+    },
+  },
+  graderBrief: `Customer: Brightline Property Group (90 buildings, ~40k tenants). The COO (Theresa) arrives with a leadership wishlist: tenant chatbot, lease-agreement auto-summaries, predictive maintenance, AI accounting close, marketing content. Budget approved; board wants a visible win this quarter. The candidate has 30 minutes of discovery and a 6-week pilot.
+Account facts the candidate was given: maintenance requests (~600/week) arrive by email+phone and are hand-logged into spreadsheets; first-response time is 48h and it's the top tenant complaint; leases are old scanned PDFs of unknown OCR quality; accounting is on Yardi with minimal IT (one sysadmin); there is NO sensor data (so "predictive maintenance" has nothing to predict from); no data team. A sample inbox shows urgent vs. routine vs. mis-routed maintenance emails.
+The strongest wedge given the facts is maintenance-request triage/drafting for the internal support team: highest volume, top pain, data already flowing (email), internal-facing (low risk), measurable (48h baseline), demoable to a board within a quarter. Grade reasoning quality over matching this exact answer — a candidate who picks differently but reasons rigorously from volume/pain/data-availability/risk deserves credit; a candidate who picks the "right" wedge without reasoning does not.
+Reward: discovery questions that probe volume, baseline metrics, data location/access, workflow ownership, and what 'win' means to the board (not "what AI do you want?"); explicit deferral reasoning for each non-chosen use case (chatbot = customer-facing risk; lease summaries = OCR unknown; predictive = no data; accounting = high blast radius, audit risk); measurable pilot success criteria anchored to the 48h baseline; concrete asks (email access, spreadsheet exports, a support-team champion, weekly check-ins); honest expectation-setting (human-in-the-loop, what the AI won't do).
+Penalize: trying to do several use cases in 6 weeks, choosing the tenant-facing chatbot without addressing risk, vague success criteria ("make things better"), no asks from the customer, or questions that are really just feature pitches.`,
+  dimensions: [
+    "Discovery questioning",
+    "Wedge selection & triage",
+    "Pilot definition & metrics",
+    "Expectation management",
+    "Communication",
+  ],
+  mockChecks: [
+    {
+      keywords: ["volume", "how many", "per week", "baseline", "where does", "who owns", "what data", "today", "currently", "process"],
+      strength: "Asked discovery questions that probe volume, baselines, and data reality.",
+      redFlag: "Discovery questions don't dig into volume, baselines, or where the data lives.",
+    },
+    {
+      keywords: ["maintenance", "triage", "support team", "inbox", "request"],
+      strength: "Anchored the pilot to the highest-volume, highest-pain workflow with data already flowing.",
+      redFlag: "Ignored the loudest signal in the notes: 600 maintenance requests/week and a 48h response time.",
+    },
+    {
+      keywords: ["not ", "defer", "later", "phase 2", "phase two", "no sensor", "ocr", "risk", "out of scope"],
+      strength: "Explicitly deferred the weaker use cases with reasons (no sensor data, OCR unknown, risk).",
+      redFlag: "Didn't say no to anything — six weeks can't carry five use cases.",
+    },
+    {
+      keywords: ["metric", "measure", "48", "response time", "success criteria", "kpi", "%"],
+      strength: "Defined measurable success criteria anchored to a real baseline.",
+      redFlag: "No measurable success criteria — the board demo will be vibes, not numbers.",
+    },
+    {
+      keywords: ["access", "export", "champion", "won't", "will not", "human", "expectation", "check-in", "weekly"],
+      strength: "Made concrete asks of the customer and set honest expectations about what AI won't do.",
+      redFlag: "No asks and no expectation-setting — the pilot will stall on access and overpromise.",
+    },
+  ],
+  portfolioLines: {
+    good: "Ran a customer discovery and scoped a 6-week AI pilot from a five-item wishlist: chose the highest-volume, data-ready workflow (maintenance triage, 600 req/wk, 48h baseline), deferred four use cases with explicit reasoning, and defined board-ready success metrics — Brightline Property FDE simulation.",
+    learning:
+      "Practiced FDE discovery fundamentals: asking volume/data/ownership questions, picking one wedge from a customer wishlist, and defining a measurable pilot.",
+  },
+};
+
+export const SCENARIOS: Scenario[] = [level0, level1, level2, level3];
 
 export function getScenario(id: string): Scenario | undefined {
   return SCENARIOS.find((s) => s.id === id);
