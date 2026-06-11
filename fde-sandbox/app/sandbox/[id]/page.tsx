@@ -117,7 +117,27 @@ function Player({ scenario }: { scenario: Scenario }) {
         <ArtifactView key={i} artifact={a} />
       ))}
 
-      <section className="mt-8 space-y-6">
+      <details className="group mt-8 rounded-xl border border-zinc-800 bg-[var(--panel)] p-4">
+        <summary className="cursor-pointer list-none text-sm font-semibold text-zinc-300 transition hover:text-amber-300">
+          <span className="mono text-amber-400/70">?</span> Stuck? What strong
+          submissions tend to cover
+          <span className="ml-1 text-zinc-600 group-open:hidden">(reveal)</span>
+        </summary>
+        <ul className="mt-3 space-y-1.5 text-sm text-zinc-400">
+          {scenario.mockChecks.map((c, i) => (
+            <li key={i} className="flex gap-2">
+              <span className="text-amber-400/60">▸</span>
+              {c.strength}
+            </li>
+          ))}
+        </ul>
+        <p className="mt-3 text-xs text-zinc-600">
+          These are directions, not answers — the reviewer rewards how
+          specifically you engage with this scenario.
+        </p>
+      </details>
+
+      <section className="mt-6 space-y-6">
         <Box box={p.scope} value={scope} onChange={setScope} />
         <Box box={p.approach} value={approach} onChange={setApproach} />
         <Box box={p.production} value={production} onChange={setProduction} />
