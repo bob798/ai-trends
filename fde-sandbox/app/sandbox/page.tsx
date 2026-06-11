@@ -24,6 +24,30 @@ export default function Levels() {
         whether the demo runs.
       </p>
 
+      {(() => {
+        const played = SCENARIOS.filter((s) => progress[s.id]);
+        const shipped = played.filter((s) => progress[s.id].verdict === "shipped");
+        const avg = played.length
+          ? Math.round(
+              played.reduce((a, s) => a + progress[s.id].bestScore, 0) / played.length,
+            )
+          : 0;
+        if (played.length === 0) return null;
+        return (
+          <div className="mt-5 flex flex-wrap gap-3 text-sm">
+            <span className="mono rounded-lg border border-zinc-800 bg-[var(--panel)] px-3 py-1.5 text-zinc-300">
+              {shipped.length}/{SCENARIOS.length} shipped
+            </span>
+            <span className="mono rounded-lg border border-zinc-800 bg-[var(--panel)] px-3 py-1.5 text-zinc-300">
+              avg best {avg}/100
+            </span>
+            <span className="mono rounded-lg border border-zinc-800 bg-[var(--panel)] px-3 py-1.5 text-zinc-300">
+              {played.length}/{SCENARIOS.length} attempted
+            </span>
+          </div>
+        );
+      })()}
+
       <div className="mt-8 space-y-5">
         {SCENARIOS.map((s, i) => {
           const p = progress[s.id];

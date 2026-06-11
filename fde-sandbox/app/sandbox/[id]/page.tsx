@@ -2,7 +2,7 @@
 
 import { use, useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { getScenario, type Artifact, type Scenario } from "@/lib/scenarios";
+import { getScenario, SCENARIOS, type Artifact, type Scenario } from "@/lib/scenarios";
 import type { Grade } from "@/lib/grader";
 import { loadDraft, recordResult, saveDraft } from "@/lib/progress";
 
@@ -137,7 +137,13 @@ function Player({ scenario }: { scenario: Scenario }) {
         {loading ? "The customer is reviewing your work…" : "Ship it for review →"}
       </button>
 
-      {grade && <Result grade={grade} customerFrom={scenario.slack.from} />}
+      {grade && (
+        <Result
+          grade={grade}
+          customerFrom={scenario.slack.from}
+          next={SCENARIOS[SCENARIOS.findIndex((s) => s.id === scenario.id) + 1]}
+        />
+      )}
     </main>
   );
 }
@@ -254,7 +260,15 @@ function ScoreBar({ score }: { score: number }) {
   );
 }
 
-function Result({ grade, customerFrom }: { grade: Grade; customerFrom: string }) {
+function Result({
+  grade,
+  customerFrom,
+  next,
+}: {
+  grade: Grade;
+  customerFrom: string;
+  next?: Scenario;
+}) {
   const v = verdictStyle[grade.verdict];
   return (
     <section className="mt-10 rounded-xl border border-zinc-700 bg-[var(--panel)] p-6">
@@ -343,6 +357,29 @@ function Result({ grade, customerFrom }: { grade: Grade; customerFrom: string })
         >
           View your portfolio →
         </Link>
+      </div>
+
+      <div className="mt-6 flex flex-wrap items-center justify-between gap-3 border-t border-zinc-800 pt-5">
+        <p className="text-sm text-zinc-400">
+          {grade.verdict === "shipped"
+            ? "Shipped. Edit your answers above to push the score higher, or take the next engagement."
+            : "Edit your answers above and ship again — or move on and come back."}
+        </p>
+        {next ? (
+          <Link
+            href={`/sandbox/${next.id}`}
+            className="shrink-0 rounded-lg bg-amber-400 px-4 py-2 text-sm font-semibold text-black transition hover:bg-amber-300"
+          >
+            Next: {next.title} →
+          </Link>
+        ) : (
+          <Link
+            href="/sandbox"
+            className="shrink-0 rounded-lg border border-zinc-700 px-4 py-2 text-sm font-semibold text-zinc-200 transition hover:border-zinc-500"
+          >
+            All engagements →
+          </Link>
+        )}
       </div>
     </section>
   );
