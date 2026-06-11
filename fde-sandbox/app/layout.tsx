@@ -25,6 +25,9 @@ export default function RootLayout({
               <Link href="/sandbox" className="transition hover:text-zinc-100">
                 Engagements
               </Link>
+              <Link href="/learn" className="transition hover:text-zinc-100">
+                Playbook
+              </Link>
               <Link href="/market" className="transition hover:text-zinc-100">
                 Market
               </Link>
