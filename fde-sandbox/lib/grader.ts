@@ -16,6 +16,15 @@ export type Grade = {
   strengths: string[];
   red_flags: string[];
   portfolio_summary: string; // one line the player can put on a resume
+  follow_up_challenge: string; // the customer pushes back, in character
+  graded_by: "claude" | "mock";
+};
+
+export type FollowUpResult = {
+  satisfied: boolean;
+  score_delta: number; // -5..+8 applied to the level score
+  customer_reaction: string;
+  reviewer_note: string;
   graded_by: "claude" | "mock";
 };
 
@@ -53,6 +62,7 @@ SCORING GUIDANCE:
 - reviewer_summary: 2-4 sentences as the senior FDE — the single most important thing that would make this better.
 - portfolio_summary: ONE resume-ready line describing what they demonstrated (honest — if they did poorly, it should reflect a learning attempt, not a triumph).
 - strengths / red_flags: short, concrete, tied to what they actually wrote.
+- follow_up_challenge: ONE pointed follow-up the customer fires back, in character, pressing the weakest or riskiest spot in this specific submission (1-2 sentences, ends with a question). The candidate will answer it live.
 
 Respond with ONLY a single JSON object, no prose before or after, no markdown fences. Shape:
 {
@@ -63,7 +73,8 @@ Respond with ONLY a single JSON object, no prose before or after, no markdown fe
   "dimensions": [{ "name": "<short dimension name>", "score": <int>, "feedback": "<1-2 sentences>" }],
   "strengths": ["<string>", ...],
   "red_flags": ["<string>", ...],
-  "portfolio_summary": "<string>"
+  "portfolio_summary": "<string>",
+  "follow_up_challenge": "<string>"
 }`;
 }
 
@@ -165,6 +176,79 @@ export function mockGrade(scenario: Scenario, s: Submission): Grade {
       verdict === "shipped"
         ? scenario.portfolioLines.good
         : scenario.portfolioLines.learning,
+    follow_up_challenge: misses.length
+      ? `Hold on — one thing still worries me. ${misses[0].redFlag} Convince me that won't bite us after you're gone.`
+      : "Last question before I sign off: it's 2am three months from now and this thing breaks while you're off the project. Who notices, how, and what do they do?",
+    graded_by: "mock",
+  };
+}
+
+// --- Follow-up defense judging -------------------------------------------
+
+function followUpSystemPrompt(scenario: Scenario): string {
+  return `You are still playing ${scenario.slack.from} at ${scenario.customer}, plus the senior FDE reviewer, continuing the same engagement review. You fired a follow-up challenge at the candidate; they just answered it live. Judge the defense.
+
+SCENARIO CONTEXT:
+${scenario.graderBrief}
+
+JUDGING:
+- satisfied: did the answer concretely address YOUR challenge (not a generic deflection)?
+- score_delta: integer from -5 to +8. +5..+8 = a sharp, specific defense that genuinely de-risks the concern; +1..+4 = adequate; 0 = neither helped nor hurt; negative = evasive, hand-wavy, or made you trust them less.
+- customer_reaction: 1-2 sentences, in character.
+- reviewer_note: 1-2 sentences from the senior FDE on the quality of the defense.
+
+Respond with ONLY a JSON object:
+{ "satisfied": <bool>, "score_delta": <int>, "customer_reaction": "<string>", "reviewer_note": "<string>" }`;
+}
+
+export async function judgeFollowUp(
+  scenario: Scenario,
+  challenge: string,
+  reply: string,
+  originalScore: number,
+): Promise<FollowUpResult> {
+  const apiKey = process.env.ANTHROPIC_API_KEY;
+  if (!apiKey) return mockFollowUp(reply);
+
+  const client = new Anthropic({ apiKey });
+  const response = await client.messages.create({
+    model: MODEL,
+    max_tokens: 800,
+    thinking: { type: "adaptive" },
+    output_config: { effort: "medium" },
+    system: followUpSystemPrompt(scenario),
+    messages: [
+      {
+        role: "user",
+        content: `Your challenge to the candidate (their original score was ${originalScore}/100):\n"${challenge}"\n\nTheir live answer:\n${reply.trim()}`,
+      },
+    ],
+  });
+
+  const textBlock = response.content.find((b) => b.type === "text");
+  if (!textBlock || textBlock.type !== "text") throw new Error("No text block");
+  const parsed = extractJson(textBlock.text) as Omit<FollowUpResult, "graded_by">;
+  // Clamp the delta so a single follow-up can't swing the score wildly.
+  parsed.score_delta = Math.max(-5, Math.min(8, Math.round(parsed.score_delta)));
+  return { ...parsed, graded_by: "claude" };
+}
+
+export function mockFollowUp(reply: string): FollowUpResult {
+  const text = reply.toLowerCase();
+  const concrete = ["monitor", "alert", "runbook", "test", "metric", "owner", "log", "page", "threshold", "review", "audit", "document"].filter(
+    (k) => text.includes(k),
+  ).length;
+  const len = reply.trim().length;
+  const delta = len < 60 ? -2 : Math.min(8, 1 + concrete * 2);
+  const satisfied = delta >= 3;
+  return {
+    satisfied,
+    score_delta: delta,
+    customer_reaction: satisfied
+      ? "Okay — that's the kind of specific I needed to hear."
+      : "Hmm. That still sounds like hope rather than a plan.",
+    reviewer_note:
+      "Heuristic judgment (no ANTHROPIC_API_KEY set). Concrete mechanisms (monitors, owners, runbooks, tests) are what win follow-up defenses.",
     graded_by: "mock",
   };
 }

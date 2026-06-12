@@ -3,7 +3,7 @@
 import { use, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { getScenario, SCENARIOS, type Artifact, type Scenario } from "@/lib/scenarios";
-import type { Grade } from "@/lib/grader";
+import type { FollowUpResult, Grade } from "@/lib/grader";
 import { loadDraft, recordResult, saveDraft } from "@/lib/progress";
 
 const verdictStyle: Record<Grade["verdict"], { label: string; cls: string }> = {
@@ -160,7 +160,7 @@ function Player({ scenario }: { scenario: Scenario }) {
       {grade && (
         <Result
           grade={grade}
-          customerFrom={scenario.slack.from}
+          scenario={scenario}
           next={SCENARIOS[SCENARIOS.findIndex((s) => s.id === scenario.id) + 1]}
         />
       )}
@@ -282,13 +282,14 @@ function ScoreBar({ score }: { score: number }) {
 
 function Result({
   grade,
-  customerFrom,
+  scenario,
   next,
 }: {
   grade: Grade;
-  customerFrom: string;
+  scenario: Scenario;
   next?: Scenario;
 }) {
+  const customerFrom = scenario.slack.from;
   const v = verdictStyle[grade.verdict];
   return (
     <section className="mt-10 rounded-xl border border-zinc-700 bg-[var(--panel)] p-6">
@@ -366,6 +367,10 @@ function Result({
         </div>
       </div>
 
+      {grade.follow_up_challenge && (
+        <FollowUpChallenge grade={grade} scenario={scenario} />
+      )}
+
       <div className="mt-6 rounded-lg border border-dashed border-zinc-700 bg-[#0d1119] p-4">
         <p className="mono text-xs uppercase tracking-widest text-zinc-500">
           📋 portfolio line (saved to your portfolio)
@@ -402,5 +407,96 @@ function Result({
         )}
       </div>
     </section>
+  );
+}
+
+function FollowUpChallenge({
+  grade,
+  scenario,
+}: {
+  grade: Grade;
+  scenario: Scenario;
+}) {
+  const [reply, setReply] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [result, setResult] = useState<FollowUpResult | null>(null);
+
+  async function defend() {
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await fetch("/api/followup", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          levelId: scenario.id,
+          challenge: grade.follow_up_challenge,
+          reply,
+          originalScore: grade.overall_score,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Judging failed");
+      const r = data as FollowUpResult;
+      setResult(r);
+      if (r.score_delta > 0) {
+        const newScore = Math.min(100, grade.overall_score + r.score_delta);
+        recordResult(scenario.id, newScore, grade.verdict, grade.portfolio_summary);
+      }
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Something went wrong");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  return (
+    <div className="mt-6 rounded-lg border border-indigo-500/30 bg-indigo-500/5 p-4">
+      <p className="mono text-xs uppercase tracking-widest text-indigo-400/80">
+        ⚡ the customer pushes back
+      </p>
+      <p className="mt-2 text-sm text-zinc-200">“{grade.follow_up_challenge}”</p>
+
+      {result ? (
+        <div className="mt-4 space-y-3">
+          <div className="flex items-center gap-3">
+            <span
+              className={`mono rounded-lg border px-3 py-1 text-xs font-bold ${
+                result.satisfied
+                  ? "border-emerald-500/40 bg-emerald-500/10 text-emerald-400"
+                  : "border-rose-500/40 bg-rose-500/10 text-rose-400"
+              }`}
+            >
+              {result.satisfied ? "DEFENDED" : "NOT CONVINCED"}
+            </span>
+            <span className="mono text-sm text-zinc-400">
+              {result.score_delta > 0 ? `+${result.score_delta}` : result.score_delta} to
+              your saved score
+            </span>
+          </div>
+          <p className="text-sm text-zinc-200">“{result.customer_reaction}”</p>
+          <p className="text-sm text-zinc-400">{result.reviewer_note}</p>
+        </div>
+      ) : (
+        <>
+          <textarea
+            value={reply}
+            onChange={(e) => setReply(e.target.value)}
+            placeholder="Answer them directly — concrete mechanisms beat reassurance."
+            rows={3}
+            className="mono mt-3 w-full resize-y rounded-lg border border-zinc-800 bg-[#0d1119] p-3 text-sm text-zinc-100 outline-none placeholder:text-zinc-600 focus:border-indigo-400/50"
+          />
+          {error && <p className="mt-2 text-sm text-rose-400">{error}</p>}
+          <button
+            onClick={defend}
+            disabled={loading}
+            className="mt-3 rounded-lg bg-indigo-400 px-4 py-2 text-sm font-semibold text-black transition hover:bg-indigo-300 disabled:opacity-50"
+          >
+            {loading ? "They're weighing it…" : "Defend it →"}
+          </button>
+        </>
+      )}
+    </div>
   );
 }
