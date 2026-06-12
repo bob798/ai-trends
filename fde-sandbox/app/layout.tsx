@@ -34,6 +34,9 @@ export default function RootLayout({
               <Link href="/market" className="transition hover:text-zinc-100">
                 Market
               </Link>
+              <Link href="/jobs" className="transition hover:text-zinc-100">
+                Jobs
+              </Link>
               <Link href="/portfolio" className="transition hover:text-zinc-100">
                 Portfolio
               </Link>

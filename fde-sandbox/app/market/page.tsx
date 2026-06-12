@@ -100,6 +100,12 @@ export default function Market() {
             + dozens of vertical-AI startups
           </span>
         </div>
+        <Link
+          href="/jobs"
+          className="mt-4 inline-block text-sm font-semibold text-amber-400 underline-offset-2 hover:underline"
+        >
+          See the full job radar with comp bands →
+        </Link>
       </section>
 
       <section className="mt-10 rounded-xl border border-amber-400/30 bg-amber-400/5 p-6">
