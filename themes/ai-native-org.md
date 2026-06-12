@@ -142,6 +142,10 @@ YC 的内部 AI 栈是闭源的。下表是把 OSS 项目按**组织记忆类型
 
 ---
 
+## 2026-06-12 更新：置信度上调
+
+YC Summer 2026 RFS（2026-04）把 **Company Brain** 和 **The AI Operating System for Companies** 列为官方征集方向，措辞与本主题"组织记忆 → 可执行资产"的推断几乎逐字吻合（"把碎片化知识变成 AI 可执行的 skills file"）。本主题的主线论点从"基于 3 条播客信号的推断"升级为"被 YC 官方 RFS 确认的命题"。Decision Memory / Layer 1 的开源空白**仍未被填上**——空白被官方点名但无人交付，机会信号增强。详见 [yc-compass-2025-2026](yc-compass-2025-2026.md) 判断③ 和 [RFS 信号](../signals/2026-04-yc-rfs-summer-2026.md)。
+
 ## 开放问题（持续追踪）
 
 1. **Layer 1 这层会不会出开源标准？** 还是会被 Mem0 + Graphiti + MCP 这套组合替代？
