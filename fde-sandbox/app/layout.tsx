@@ -1,11 +1,37 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { SITE_URL } from "@/lib/site";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "FDE Sandbox — Practice the last mile",
+  metadataBase: new URL(SITE_URL),
+  title: {
+    default: "FDE Sandbox — Practice the last mile",
+    template: "%s · FDE Sandbox",
+  },
   description:
     "Become a Forward Deployed Engineer by shipping, not watching. Practice the messiest real moment: dirty data, a vague ask, and production that has to not break.",
+  keywords: [
+    "forward deployed engineer",
+    "FDE",
+    "FDE interview",
+    "FDE salary",
+    "AI engineer career",
+    "RAG production",
+  ],
+  openGraph: {
+    siteName: "FDE Sandbox",
+    type: "website",
+    title: "FDE Sandbox — Practice the last mile",
+    description:
+      "Simulated FDE engagements graded by an AI senior reviewer: dirty data, vague asks, legacy APIs, production incidents. Do the rep before the interview.",
+  },
+  twitter: {
+    card: "summary",
+    title: "FDE Sandbox — Practice the last mile",
+    description:
+      "Simulated FDE engagements graded on production-survivability, not demo polish.",
+  },
 };
 
 export default function RootLayout({
