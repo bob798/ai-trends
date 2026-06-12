@@ -1,7 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { QUESTIONS, type InterviewQuestion } from "@/lib/interview";
+import {
+  loadInterviewProgress,
+  recordInterviewResult,
+  type InterviewProgress,
+} from "@/lib/progress";
 
 type InterviewResult = {
   verdict: "strong_hire" | "hire" | "lean_no_hire" | "no_hire";
@@ -33,6 +38,8 @@ export default function Interview() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<InterviewResult | null>(null);
+  const [progress, setProgress] = useState<Record<string, InterviewProgress>>({});
+  useEffect(() => setProgress(loadInterviewProgress()), []);
 
   function pick(q: InterviewQuestion) {
     setSelected(q);
@@ -55,7 +62,9 @@ export default function Interview() {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Review failed");
-      setResult(data as InterviewResult);
+      const r = data as InterviewResult;
+      setResult(r);
+      setProgress(recordInterviewResult(selected.id, r.score, r.verdict));
     } catch (e) {
       setError(e instanceof Error ? e.message : "Something went wrong");
     } finally {
@@ -189,9 +198,17 @@ export default function Interview() {
               onClick={() => pick(q)}
               className="block w-full rounded-xl border border-zinc-800 bg-[var(--panel)] p-5 text-left transition hover:border-amber-400/40"
             >
-              <p className="mono text-xs uppercase tracking-widest text-zinc-500">
-                {catLabel[q.category]}
-              </p>
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <p className="mono text-xs uppercase tracking-widest text-zinc-500">
+                  {catLabel[q.category]}
+                </p>
+                {progress[q.id] && (
+                  <span className="mono rounded border border-zinc-700 bg-zinc-800/60 px-2 py-0.5 text-[10px] font-bold text-zinc-300">
+                    best {progress[q.id].bestScore} ·{" "}
+                    {progress[q.id].bestVerdict.replace(/_/g, " ")}
+                  </span>
+                )}
+              </div>
               <p className="mt-2 text-zinc-100">{q.question}</p>
               <p className="mt-2 text-xs text-zinc-500">Tests: {q.probes}</p>
             </button>

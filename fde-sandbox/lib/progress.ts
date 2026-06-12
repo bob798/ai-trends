@@ -42,6 +42,44 @@ export function recordResult(
   return all;
 }
 
+// --- Interview progress ----------------------------------------------------
+
+export type InterviewProgress = {
+  bestScore: number;
+  bestVerdict: string;
+  attempts: number;
+  lastPlayedAt: string;
+};
+
+const INTERVIEW_KEY = "fde-sandbox-interview-v1";
+
+export function loadInterviewProgress(): Record<string, InterviewProgress> {
+  if (typeof window === "undefined") return {};
+  try {
+    return JSON.parse(window.localStorage.getItem(INTERVIEW_KEY) ?? "{}");
+  } catch {
+    return {};
+  }
+}
+
+export function recordInterviewResult(
+  questionId: string,
+  score: number,
+  verdict: string,
+): Record<string, InterviewProgress> {
+  const all = loadInterviewProgress();
+  const prev = all[questionId];
+  const improved = !prev || score >= prev.bestScore;
+  all[questionId] = {
+    bestScore: improved ? score : prev.bestScore,
+    bestVerdict: improved ? verdict : prev.bestVerdict,
+    attempts: (prev?.attempts ?? 0) + 1,
+    lastPlayedAt: new Date().toISOString(),
+  };
+  window.localStorage.setItem(INTERVIEW_KEY, JSON.stringify(all));
+  return all;
+}
+
 export type Draft = { scope: string; approach: string; production: string };
 
 export function loadDraft(levelId: string): Draft | null {
