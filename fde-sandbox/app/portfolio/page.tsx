@@ -5,11 +5,36 @@ import Link from "next/link";
 import { SCENARIOS } from "@/lib/scenarios";
 import { QUESTIONS } from "@/lib/interview";
 import {
+  clearAllProgress,
   loadInterviewProgress,
   loadProgress,
   type InterviewProgress,
   type Progress,
 } from "@/lib/progress";
+
+type Readiness = { tier: string; cls: string; blurb: string };
+
+function readiness(shippedLevels: number, totalLevels: number, hireQs: number, totalQs: number): Readiness {
+  const levelsDone = shippedLevels >= totalLevels;
+  const interviewsStrong = hireQs >= Math.ceil(totalQs * 0.7);
+  if (levelsDone && interviewsStrong)
+    return {
+      tier: "FDE INTERVIEW-READY",
+      cls: "text-emerald-300 border-emerald-500/40 bg-emerald-500/10",
+      blurb: "You've shipped every engagement and cleared the interview bar on most questions. Walk into the loop with reps, not nerves.",
+    };
+  if (shippedLevels >= 1 || hireQs >= 1)
+    return {
+      tier: "BUILDING THE CASE",
+      cls: "text-amber-300 border-amber-500/40 bg-amber-500/10",
+      blurb: "Good start. Ship the remaining engagements and push more interview answers to the hire bar to be loop-ready.",
+    };
+  return {
+    tier: "WARMING UP",
+    cls: "text-sky-300 border-sky-500/40 bg-sky-500/10",
+    blurb: "You've attempted work but nothing has cleared the bar yet. Revise and resubmit — the reviewer rewards specificity.",
+  };
+}
 
 function buildMarkdown(
   progress: Progress,
@@ -53,6 +78,7 @@ export default function Portfolio() {
   const [progress, setProgress] = useState<Progress>({});
   const [interview, setInterview] = useState<Record<string, InterviewProgress>>({});
   const [copied, setCopied] = useState(false);
+  const [confirmReset, setConfirmReset] = useState(false);
   useEffect(() => {
     setProgress(loadProgress());
     setInterview(loadInterviewProgress());
@@ -98,6 +124,35 @@ export default function Portfolio() {
         </div>
       ) : (
         <>
+          {(() => {
+            const shippedLevels = done.filter((s) => progress[s.id].verdict === "shipped").length;
+            const hireQs = drilled.filter((q) =>
+              ["hire", "strong_hire"].includes(interview[q.id].bestVerdict),
+            ).length;
+            const r = readiness(shippedLevels, SCENARIOS.length, hireQs, QUESTIONS.length);
+            return (
+              <div className="mt-8 rounded-xl border border-zinc-700 bg-[var(--panel)] p-6">
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <p className="mono text-xs uppercase tracking-widest text-zinc-500">
+                    your standing
+                  </p>
+                  <span className={`mono rounded-lg border px-4 py-2 text-sm font-bold ${r.cls}`}>
+                    {r.tier}
+                  </span>
+                </div>
+                <div className="mt-4 flex flex-wrap gap-3 text-sm">
+                  <span className="mono rounded-lg border border-zinc-800 bg-[#0d1119] px-3 py-1.5 text-zinc-300">
+                    {shippedLevels}/{SCENARIOS.length} engagements shipped
+                  </span>
+                  <span className="mono rounded-lg border border-zinc-800 bg-[#0d1119] px-3 py-1.5 text-zinc-300">
+                    {hireQs}/{QUESTIONS.length} interviews at hire bar
+                  </span>
+                </div>
+                <p className="mt-4 text-sm text-zinc-400">{r.blurb}</p>
+              </div>
+            );
+          })()}
+
           <div className="mt-8 space-y-4">
             {done.map((s) => {
               const p = progress[s.id];
@@ -175,6 +230,41 @@ export default function Portfolio() {
                 Download .md
               </button>
             </div>
+          </div>
+
+          <div className="mt-6 flex items-center justify-between gap-3">
+            <p className="text-xs text-zinc-600">
+              Progress is stored only in this browser.
+            </p>
+            {confirmReset ? (
+              <span className="flex items-center gap-2 text-xs">
+                <span className="text-zinc-400">Erase all progress?</span>
+                <button
+                  onClick={() => {
+                    clearAllProgress();
+                    setProgress({});
+                    setInterview({});
+                    setConfirmReset(false);
+                  }}
+                  className="rounded border border-rose-500/40 bg-rose-500/10 px-2 py-1 font-semibold text-rose-300"
+                >
+                  Yes, reset
+                </button>
+                <button
+                  onClick={() => setConfirmReset(false)}
+                  className="rounded border border-zinc-700 px-2 py-1 text-zinc-400"
+                >
+                  Cancel
+                </button>
+              </span>
+            ) : (
+              <button
+                onClick={() => setConfirmReset(true)}
+                className="text-xs text-zinc-500 underline-offset-2 hover:text-rose-400 hover:underline"
+              >
+                Reset progress
+              </button>
+            )}
           </div>
         </>
       )}

@@ -105,3 +105,15 @@ export function saveDraft(levelId: string, draft: Draft) {
     // best-effort
   }
 }
+
+// --- Reset -----------------------------------------------------------------
+
+export function clearAllProgress() {
+  for (const k of [KEY, DRAFT_KEY, INTERVIEW_KEY]) {
+    try {
+      window.localStorage.removeItem(k);
+    } catch {
+      // best-effort
+    }
+  }
+}
