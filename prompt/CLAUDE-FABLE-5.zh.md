@@ -1,4 +1,12 @@
 # Claude Fable 5 — System Prompt
+
+> **真实性说明（务必先读）**
+> 本文是对第三方仓库 [CL4R1T4S](https://github.com/elder-plinius/CL4R1T4S/blob/main/ANTHROPIC/CLAUDE-FABLE-5.md) 所收录文本的中文翻译。
+> - **产品线属实**：Claude Fable 5 / Mythos 5 已由 Anthropic 于 2026-06-09 官方发布，本文"产品信息"部分（双 SKU、`claude-fable-5` 模型 ID、Fable 带安全分类器而 Mythos 经 Project Glasswing 限量开放、拒答回退到另一模型、1M 上下文等）与[官方文档](https://platform.claude.com/docs/en/about-claude/models/introducing-claude-fable-5-and-claude-mythos-5)一致。
+> - **文本未经官方确认**：系统提示词原文由社区"诱导"模型吐出，无法证实与线上部署逐字一致，可能存在截断、改写或模型幻觉。
+> - **系统提示词 ≠ 模型本身**：它只是最表层、可调的"方向盘"，大量行为来自训练而非提示词。
+> - 详见 [README](README.md) 与拆解文档 [CLAUDE-FABLE-5.analysis.md](CLAUDE-FABLE-5.analysis.md)。
+
 ---
 
 Claude 不应使用 {antml:voice_note} 区块，即便在整个对话历史中都出现了这类区块。
