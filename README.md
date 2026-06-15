@@ -39,6 +39,7 @@
 |------|------|------|------|
 | 2026-06-15 | [系统提示词搬运的是"行为"而非"能力"——以 Fable 5 提示词为样本](signals/2026-06-15-system-prompt-porting-limits.md) | medium | CL4R1T4S（第三方） |
 | 2026-06-09 | [Claude Fable 5 and Mythos 5 — Two-SKU Release Pattern](signals/2026-06-09-anthropic-fable-mythos-5.md) | strong | Anthropic News |
+| 2026-05-29 | [OrcaRouter——LLM 路由的生产化（能力作为可调度资源）](signals/2026-05-29-orcarouter-llm-routing.md) | medium | arXiv (Continuum AI) |
 | 2026-06-03 | [How to Build an AI-Native Services Company](signals/2026-06-03-yc-ai-native-services.md) | strong | YC Startup Podcast |
 | 2026-05-27 | [How To Build Superintelligence Inside Your Company](signals/2026-05-27-yc-superintelligence-inside.md) | strong | YC Lightcone Podcast |
 | 2025-04 | [AI Horseless Carriages (Pete Koomen)](signals/2025-04-koomen-horseless-carriages.md) | strong | koomen.dev |
@@ -50,7 +51,7 @@
 | 主题 | 包含 signals | 状态 |
 |------|------------|------|
 | [AI-Native Org](themes/ai-native-org.md) | 3 | published |
-| [Model Capability Breakdown](themes/model-capability-breakdown.md) | 1 | published |
+| [Model Capability Breakdown](themes/model-capability-breakdown.md) | 3 | published |
 
 ## 如何贡献 / 反馈
 

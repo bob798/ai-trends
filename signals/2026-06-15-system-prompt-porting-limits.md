@@ -86,6 +86,8 @@ status: published
 # 关联信号
 
 - [[2026-06-09-anthropic-fable-mythos-5]]——同一发布的"双 SKU 产品范式"角度；本条是其"系统提示词/方法论"侧的延展。
+- [[2026-05-29-orcarouter-llm-routing]]——"补能力路线三：难度路由 cascade"的落地形态；共享测试时算力主轴。
+- 归入主题：[../themes/model-capability-breakdown.md](../themes/model-capability-breakdown.md)（见「隐藏主轴：测试时算力」节）。
 - 配套文档：[prompt/ 目录导览](../prompt/README.md)（翻译 / 拆解 / 移植 / 补推理）。
 
 # 元信息
