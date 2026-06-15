@@ -26,3 +26,4 @@
 | [CLAUDE-FABLE-5.zh.md](CLAUDE-FABLE-5.zh.md) | Claude Fable 5 系统提示词（中文翻译，含真实性说明） | [CL4R1T4S](https://github.com/elder-plinius/CL4R1T4S/blob/main/ANTHROPIC/CLAUDE-FABLE-5.md) |
 | [CLAUDE-FABLE-5.en.md](CLAUDE-FABLE-5.en.md) | 同上，英文原文存档 | 同上 |
 | [CLAUDE-FABLE-5.analysis.md](CLAUDE-FABLE-5.analysis.md) | 拆解：这份提示词有什么价值（含联网核验） | 本仓库 |
+| [CLAUDE-FABLE-5.porting-guide.md](CLAUDE-FABLE-5.porting-guide.md) | 移植指南：用此提示词让"非 Fable 5 模型"逼近其表现（行为可搬、能力不可搬） | 本仓库 |
