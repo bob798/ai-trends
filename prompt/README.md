@@ -4,6 +4,23 @@
 
 和 `signals/` 不同：signal 是对一份材料的结构化拆解，而这里保留的是**一手全文**——系统提示词本身就是研究对象，任何二手转述都会损失信息。翻译只为降低阅读门槛，不做删改、不做概括。
 
+## 文档导览
+
+围绕 Claude Fable 5 系统提示词，这里有一组从"读懂"到"借用"的文档。建议按下图顺序读：
+
+```mermaid
+flowchart TD
+    EN["CLAUDE-FABLE-5.en.md<br/>英文原文存档（一手）"] --> ZH["CLAUDE-FABLE-5.zh.md<br/>中文翻译 + 真实性说明"]
+    ZH --> AN["analysis.md<br/>拆解：有什么价值<br/>(产品策略/提示工程/能力面/元层)"]
+    AN -->|"想借它提升别的模型?"| PORT["porting-guide.md<br/>移植指南<br/>行为可搬 · 能力不可搬"]
+    PORT -->|"最难的一块：推理"| REASON["reasoning-uplift.md<br/>补推理专题<br/>test-time compute / 蒸馏 / 路由"]
+    AN -.沉淀为信号.-> SIG["../signals/2026-06-15-<br/>system-prompt-porting-limits.md"]
+    PORT -.-> SIG
+    REASON -.-> SIG
+```
+
+**一句话串起来**：先看原文（EN/ZH）→ 用 `analysis` 理解它的价值 → 若想借它提升别的模型，看 `porting-guide`（记住：行为可搬、能力不可搬）→ 其中最难的"推理"单独看 `reasoning-uplift` → 三者的方法论结论沉淀在 `signals/` 那条。
+
 ## 翻译原则
 
 - **逐字、完整**：不省略、不概括、不增补。
@@ -28,3 +45,5 @@
 | [CLAUDE-FABLE-5.analysis.md](CLAUDE-FABLE-5.analysis.md) | 拆解：这份提示词有什么价值（含联网核验） | 本仓库 |
 | [CLAUDE-FABLE-5.porting-guide.md](CLAUDE-FABLE-5.porting-guide.md) | 移植指南：用此提示词让"非 Fable 5 模型"逼近其表现（行为可搬、能力不可搬） | 本仓库 |
 | [CLAUDE-FABLE-5.reasoning-uplift.md](CLAUDE-FABLE-5.reasoning-uplift.md) | 专题：如何把弱底座的推理能力拉近 Fable 5（test-time compute / 蒸馏 / 路由，含联网核验） | 本仓库 |
+
+> 方法论结论已沉淀为信号：[系统提示词搬运的是"行为"而非"能力"](../signals/2026-06-15-system-prompt-porting-limits.md)。
