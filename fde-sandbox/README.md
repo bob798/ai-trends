@@ -59,6 +59,7 @@ would press on next** — revise and resubmit; that rep is the practice.
 ```bash
 npm install
 npm run dev          # http://localhost:3000
+npm test             # vitest — unit tests for the grading core
 ```
 
 ### Grading
