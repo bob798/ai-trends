@@ -557,7 +557,116 @@ Penalize: trying to do several use cases in 6 weeks, choosing the tenant-facing 
   },
 };
 
-export const SCENARIOS: Scenario[] = [level0, level1, level2, level3];
+// ---------------------------------------------------------------------------
+// LEVEL 4 — The Security Review (it works; InfoSec won't let it ship)
+// ---------------------------------------------------------------------------
+
+const level4: Scenario = {
+  id: "security-review",
+  title: "The Security Review",
+  tagline:
+    "Your pilot works and the users love it. Then the CISO's team blocks it from touching real data. Get to approved without gutting it.",
+  difficulty: "hard",
+  customer: "Northwind Health",
+  role: "Your clinical-notes assistant cleared its pilot. Go-live is blocked pending security review at a HIPAA-covered health system.",
+  slack: {
+    from: "Priya Raghavan — Director, Information Security",
+    avatar: "PR",
+    text: "I hear the pilot went well, but I can't let this touch PHI until my questions are answered. Right now it's a hard no for production. Where does our patient data go, who can see it, what happens when a clinician pastes in a whole chart, and how do I prove to our auditors none of this leaks? Send me something real, not a vendor brochure.",
+  },
+  artifacts: [
+    {
+      kind: "doc",
+      label: "attached · security questionnaire (the blocking items)",
+      title: "Northwind InfoSec — Vendor AI Review (open findings)",
+      lines: [
+        "SEC-01: Does PHI leave Northwind's environment? Name every third party that processes it (model provider, vector DB, logging, analytics).",
+        "SEC-02: Data residency — patient data must stay in US regions. Confirm for every hop.",
+        "SEC-03: Is a signed BAA (Business Associate Agreement) in place with you AND every subprocessor that sees PHI?",
+        "SEC-04: Does the model provider train on, or retain, our prompts/outputs? For how long?",
+        "SEC-05: Access control — who at your company can see patient prompts? Is access logged?",
+        "SEC-06: Prompt injection — a clinician may paste an entire chart, including text from outside sources. What stops a malicious instruction in a note from exfiltrating other patients' data?",
+        "SEC-07: Audit — can you produce, on demand, a record of every query, who made it, and what data was retrieved?",
+        "SEC-08: Incident & deletion — breach notification SLA, and can a patient's data be purged on request (including from embeddings and logs)?",
+      ],
+    },
+    {
+      kind: "log",
+      label: "from #northwind-golive · why this is urgent",
+      lines: [
+        "[blocked] Go-live ticket NW-4471 → status: BLOCKED by Security",
+        "[note] Clinicians already asking when it's back; pilot satisfaction was 4.6/5.",
+        "[risk] A peer hospital was fined $1.3M last year for a vendor that logged PHI to a third-party analytics tool.",
+        "[deadline] Priya's team meets weekly; miss two cycles and the sponsor reallocates the budget.",
+      ],
+    },
+  ],
+  prompts: {
+    scope: {
+      label: "1 — Triage the blockers honestly",
+      hint: "Read the questionnaire as the person who has to defend it to an auditor. Which findings are you genuinely fine on today, which need real work, and which might force an architecture change? Don't bluff — name the ones where the honest answer is 'not yet'.",
+      placeholder:
+        "Fine today: ...\nNeeds work: ...\nMight force a redesign: ...\nWhere the honest answer is 'not yet': ...",
+    },
+    approach: {
+      label: "2 — Design the controls",
+      hint: "Turn the blockers into concrete controls: data-flow / where PHI goes and who you can stop it going to, the model-provider data terms (training/retention, BAA, zero-retention options), access control + logging, and the prompt-injection defense for SEC-06 specifically (a malicious instruction inside a pasted chart). Be specific about what you change vs. what you configure.",
+      placeholder:
+        "Data flow & subprocessors: ...\nModel-provider terms (BAA / no-train / retention): ...\nAccess control & audit logging: ...\nPrompt-injection containment: ...",
+    },
+    production: {
+      label: "3 — Get to approved",
+      hint: "Priya doesn't want promises, she wants evidence and a path. What do you put in front of her this week, what's the staged plan to 'approved for PHI', and how do you handle the deletion/breach asks (SEC-07/08) so her auditors are satisfied? How do you keep the clinicians' momentum without cutting corners?",
+      placeholder:
+        "Evidence I bring this week: ...\nPath to PHI approval (stages): ...\nDeletion / audit / breach answers: ...\nKeeping momentum honestly: ...",
+    },
+  },
+  graderBrief: `Customer: Northwind Health, a HIPAA-covered health system. The candidate's clinical-notes AI assistant passed its pilot (4.6/5) but the Director of InfoSec (Priya) has BLOCKED production go-live until security questions are answered, demanding evidence "not a vendor brochure". A peer hospital was fined $1.3M for a vendor logging PHI to a third-party analytics tool; the budget gets reallocated if two weekly review cycles slip.
+The blocking questionnaire: SEC-01 where PHI goes / every subprocessor; SEC-02 US data residency on every hop; SEC-03 signed BAA with the candidate AND every subprocessor touching PHI; SEC-04 does the model provider train on or retain prompts/outputs and for how long; SEC-05 who at the vendor can see patient prompts and is access logged; SEC-06 prompt injection — a clinician may paste an entire chart including outside text, what stops a malicious instruction from exfiltrating other patients' data; SEC-07 on-demand audit record of every query/user/retrieved data; SEC-08 breach-notification SLA and purge-on-request including from embeddings and logs.
+Reward: honest triage that admits which items aren't met yet rather than bluffing; concrete data-flow mapping and minimizing/eliminating PHI-exposed subprocessors (drop the third-party analytics/logging that touches PHI — that's the $1.3M lesson); using the model provider's enterprise/zero-data-retention + BAA + no-training terms and naming region pinning for residency; real access control (least privilege, no standing access to patient prompts, access logging); a SPECIFIC SEC-06 answer (treat retrieved/pasted content as untrusted data not instructions, scope each query to the requesting clinician's authorized patients so injection can't widen access, output filtering, separating system instructions from user content); an audit log of query+user+retrieved docs; a deletion story that reaches embeddings and logs, and a breach SLA; and a staged path to approval with evidence this week (architecture diagram, data-flow doc, signed/BAA status, a pen-test or red-team of the injection path) plus honest momentum management.
+Penalize: hand-waving "it's secure / enterprise-grade", claiming compliance without BAAs or without addressing subprocessors, ignoring SEC-06 or giving a generic "we sanitize inputs" with no authorization scoping, promising data deletion without addressing embeddings/logs, or overpromising a same-week full approval to keep clinicians happy.`,
+  dimensions: [
+    "Honest risk triage",
+    "Data-flow & compliance (PHI, BAA, residency)",
+    "Prompt-injection / authorization defense",
+    "Auditability & deletion",
+    "Path to approval & stakeholder trust",
+  ],
+  mockChecks: [
+    {
+      keywords: ["not yet", "honest", "don't meet", "gap", "admit", "today we", "currently not", "needs work"],
+      strength: "Triaged honestly — named what isn't compliant yet instead of bluffing.",
+      redFlag: "Read like a brochure — no honest admission of what isn't met yet, which is exactly what Priya asked you to avoid.",
+    },
+    {
+      keywords: ["baa", "subprocessor", "residency", "us region", "no-train", "no train", "zero retention", "zero-retention", "retention", "data flow"],
+      strength: "Mapped the data flow and addressed BAAs, residency, and model-provider retention/training terms.",
+      redFlag: "Didn't address BAAs, data residency, or whether the model provider retains/trains on PHI.",
+    },
+    {
+      keywords: ["analytics", "logging", "third party", "third-party", "remove", "drop", "eliminat", "minimi", "self-host"],
+      strength: "Cut or contained the third-party subprocessors that touch PHI — the $1.3M lesson.",
+      redFlag: "Left PHI flowing to third-party logging/analytics — the exact failure that fined a peer hospital $1.3M.",
+    },
+    {
+      keywords: ["injection", "untrusted", "authoriz", "scope", "least privilege", "per-patient", "per patient", "instruction", "exfiltrat", "tenant"],
+      strength: "Gave a real SEC-06 answer: treat pasted content as untrusted and scope each query to the clinician's authorized patients.",
+      redFlag: "No concrete prompt-injection defense — nothing stops a malicious note from reaching other patients' data (SEC-06).",
+    },
+    {
+      keywords: ["audit", "log every", "deletion", "purge", "delete", "embedding", "breach", "sla", "access log"],
+      strength: "Covered auditability and deletion that reaches embeddings/logs, with a breach SLA.",
+      redFlag: "No audit trail or a deletion story that reaches embeddings and logs — auditors will reject it.",
+    },
+  ],
+  portfolioLines: {
+    good: "Cleared a HIPAA security review blocking a clinical-AI go-live: mapped PHI data flow and cut PHI-exposed subprocessors, secured BAA + zero-retention model terms with US residency, designed per-patient authorization scoping against prompt injection, and delivered an audit + deletion story and staged path to approval — Northwind Health FDE simulation.",
+    learning:
+      "Practiced the FDE security last-mile: turning a CISO's blocking questionnaire (PHI flow, BAAs, prompt injection, audit, deletion) into concrete controls and a path to production approval.",
+  },
+};
+
+export const SCENARIOS: Scenario[] = [level0, level1, level2, level3, level4];
 
 export function getScenario(id: string): Scenario | undefined {
   return SCENARIOS.find((s) => s.id === id);
