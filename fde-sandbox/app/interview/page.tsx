@@ -30,6 +30,7 @@ const catLabel: Record<InterviewQuestion["category"], string> = {
   technical: "technical",
   incident: "incident",
   judgment: "judgment",
+  security: "security",
 };
 
 export default function Interview() {

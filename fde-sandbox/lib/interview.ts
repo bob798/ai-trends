@@ -4,7 +4,7 @@
 
 export type InterviewQuestion = {
   id: string;
-  category: "scoping" | "technical" | "incident" | "judgment";
+  category: "scoping" | "technical" | "incident" | "judgment" | "security";
   question: string;
   probes: string; // shown to the candidate as "what this tests"
   graderBrief: string;
@@ -159,6 +159,56 @@ export const QUESTIONS: InterviewQuestion[] = [
         keywords: ["renewal", "honest", "plan", "show", "metric", "baseline"],
         strength: "Walked into the renewal with the honest number and a credible plan.",
         gap: "No renewal strategy — the customer sees the same dashboard you do.",
+      },
+    ],
+  },
+  {
+    id: "phi-security-review",
+    category: "security",
+    question:
+      "You're deploying a RAG assistant over a hospital's clinical notes. Their security team asks: where does patient data go, and what stops a malicious instruction pasted inside a clinical note from making the assistant leak another patient's records? Walk me through your answer.",
+    probes: "Security judgment — data governance and prompt injection under real compliance pressure.",
+    graderBrief: `A strong answer covers two distinct things clearly. (1) Data flow: name every place PHI travels (model provider, vector DB, logs), commit to US data residency, get a signed BAA with you and every subprocessor that sees PHI, use the model provider's enterprise / zero-retention / no-training terms, and eliminate any third-party logging/analytics that would touch PHI. (2) Prompt injection / authorization — the load-bearing part: retrieved or pasted content must be treated as untrusted DATA, not instructions; the system prompt is separated from user content; and crucially, every retrieval query is scoped to the requesting clinician's authorized patients so that even a successful injection cannot widen access to other patients' records (authorization at the data layer, not just input sanitization). Bonus: audit logging of who queried what, output filtering, and a red-team of the injection path. Weak answers say "we sanitize inputs" or "it's encrypted and enterprise-grade" without the authorization-scoping insight, or conflate the two questions.`,
+    mockChecks: [
+      {
+        keywords: ["baa", "residency", "subprocessor", "retention", "no-train", "no train", "zero retention", "data flow", "where"],
+        strength: "Mapped the PHI data flow and addressed BAAs, residency, and model-provider retention.",
+        gap: "Didn't account for where PHI actually goes (subprocessors, BAAs, retention).",
+      },
+      {
+        keywords: ["untrusted", "authoriz", "scope", "per-patient", "per patient", "data layer", "instruction", "not instructions", "least privilege"],
+        strength: "Nailed the load-bearing point: scope retrieval to the clinician's authorized patients so injection can't widen access.",
+        gap: "Missed the key insight — authorization scoping at the data layer, not just 'we sanitize inputs', is what actually stops cross-patient leakage.",
+      },
+      {
+        keywords: ["audit", "log", "red team", "red-team", "pen test", "pen-test", "output filter", "monitor"],
+        strength: "Added auditability and adversarial testing of the injection path.",
+        gap: "No audit trail or adversarial test of the injection path — you can't prove it's safe.",
+      },
+    ],
+  },
+  {
+    id: "pipeline-debug",
+    category: "technical",
+    question:
+      "A customer reports your extraction pipeline 'started returning garbage yesterday'. Same code, no deploy. You have access to logs and the data. How do you find the cause?",
+    probes: "Debugging method — systematic root-cause on a system you can't just rerun in your head.",
+    graderBrief: `A strong answer is a systematic narrowing, not a guess: first reproduce on a specific failing example and define 'garbage' concretely (what changed in the output shape?); diff what's actually different between a known-good run and now — since the code didn't change, suspect inputs (a new data source, a format/encoding/schema change upstream, a vendor that altered their export), dependencies (a model/provider version or API behavior change, a silently updated library), or environment/quotas (rate limits, truncation, an expired key degrading to a fallback). Check logs for the first failing timestamp and correlate with any upstream change; bisect by input cohort; verify assumptions with a minimal repro. Mentions adding a regression example + monitoring so it's caught automatically next time. Weak answers jump to 'retrain the model' or 'add try/catch' without isolating the change.`,
+    mockChecks: [
+      {
+        keywords: ["reproduce", "specific example", "minimal", "define", "what changed", "diff", "narrow", "isolate", "bisect"],
+        strength: "Reproduced on a concrete example and narrowed by diffing good vs. bad rather than guessing.",
+        gap: "No systematic narrowing — jumped at causes without reproducing or isolating the change.",
+      },
+      {
+        keywords: ["input", "upstream", "schema", "encoding", "format", "data source", "vendor", "dependency", "version", "provider", "model version", "library"],
+        strength: "Suspected the right culprits for 'same code, new failure': upstream input or dependency/provider changes.",
+        gap: "Didn't consider that with unchanged code the cause is almost always changed inputs or a dependency/provider shift.",
+      },
+      {
+        keywords: ["log", "timestamp", "first fail", "correlate", "regression", "monitor", "alert", "test"],
+        strength: "Used logs/timestamps to pinpoint onset and added a regression guard for next time.",
+        gap: "No use of log timestamps to find onset, and no regression guard so it won't silently recur.",
       },
     ],
   },
