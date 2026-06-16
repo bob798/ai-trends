@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { SITE_URL } from "@/lib/site";
+import { JsonLd } from "./json-ld";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -42,6 +43,27 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
+        <JsonLd
+          data={{
+            "@context": "https://schema.org",
+            "@graph": [
+              {
+                "@type": "WebSite",
+                "@id": `${SITE_URL}/#website`,
+                url: SITE_URL,
+                name: "FDE Sandbox",
+                description:
+                  "Practice the Forward Deployed Engineer role through simulated, AI-graded engagements.",
+              },
+              {
+                "@type": "Organization",
+                "@id": `${SITE_URL}/#org`,
+                name: "FDE Sandbox",
+                url: SITE_URL,
+              },
+            ],
+          }}
+        />
         <header className="border-b border-zinc-800/70">
           <nav className="mx-auto flex max-w-4xl items-center justify-between px-6 py-4">
             <Link href="/" className="mono text-sm font-bold tracking-wide text-amber-400">

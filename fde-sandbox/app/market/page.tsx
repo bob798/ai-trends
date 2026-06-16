@@ -1,5 +1,25 @@
 import Link from "next/link";
 import { SubscribeForm } from "./subscribe-form";
+import { JsonLd } from "../json-ld";
+
+const FAQ: { q: string; a: string }[] = [
+  {
+    q: "How much does a Forward Deployed Engineer make in 2026?",
+    a: "Total compensation ranges from roughly $150K–$215K for entry-level FDEs to $300K–$450K at mid-level (median ≈ $385K), $500K–$700K at staff level, and $785K+ to over $1M for senior and principal FDEs at frontier labs like OpenAI and Anthropic.",
+  },
+  {
+    q: "Why is demand for Forward Deployed Engineers growing so fast?",
+    a: "FDE job postings grew 700%+ year over year into 2026 because about 95% of enterprise generative-AI pilots fail to reach production impact (MIT). FDEs exist to close that 'last mile' — the gap between a clean demo and a live customer system with messy data and brittle APIs.",
+  },
+  {
+    q: "Which companies hire Forward Deployed Engineers?",
+    a: "Frontier labs (OpenAI, Anthropic, Mistral, Cohere), enterprise-AI companies (Palantir, Scale AI, Databricks), and vertical-AI startups (Sierra, Harvey, Glean). Over 224 open FDE roles were tracked across 39+ companies in 2026.",
+  },
+  {
+    q: "What skills do Forward Deployed Engineers need?",
+    a: "Shipping production code under ambiguous specs, integrating with messy real-world data and legacy/flaky APIs, RAG and LLM application engineering, customer-facing communication, and judgment about scoping, security, and incident response — the skills the FDE Sandbox drills.",
+  },
+];
 
 export const metadata = {
   title: "FDE Market — salaries & demand for Forward Deployed Engineers (2026)",
@@ -131,6 +151,35 @@ export default function Market() {
         </p>
         <SubscribeForm />
       </section>
+
+      <section className="mt-10">
+        <h2 className="text-xl font-semibold">FDE FAQ</h2>
+        <div className="mt-4 space-y-3">
+          {FAQ.map((item) => (
+            <details
+              key={item.q}
+              className="rounded-xl border border-zinc-800 bg-[var(--panel)] p-4"
+            >
+              <summary className="cursor-pointer list-none text-sm font-semibold text-zinc-200">
+                {item.q}
+              </summary>
+              <p className="mt-2 text-sm text-zinc-400">{item.a}</p>
+            </details>
+          ))}
+        </div>
+      </section>
+
+      <JsonLd
+        data={{
+          "@context": "https://schema.org",
+          "@type": "FAQPage",
+          mainEntity: FAQ.map((item) => ({
+            "@type": "Question",
+            name: item.q,
+            acceptedAnswer: { "@type": "Answer", text: item.a },
+          })),
+        }}
+      />
 
       <section className="mt-10">
         <h2 className="text-sm font-semibold uppercase tracking-widest text-zinc-500">
