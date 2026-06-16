@@ -666,7 +666,115 @@ Penalize: hand-waving "it's secure / enterprise-grade", claiming compliance with
   },
 };
 
-export const SCENARIOS: Scenario[] = [level0, level1, level2, level3, level4];
+// ---------------------------------------------------------------------------
+// LEVEL 5 — Prove It Works (eval design: earn trust before you scale)
+// ---------------------------------------------------------------------------
+
+const level5: Scenario = {
+  id: "prove-it-works",
+  title: "Prove It Works",
+  tagline:
+    "The pilot's a hit and the exec wants to roll it out to all 200 adjusters. Risk asks: how do you KNOW it's good enough? You have no labeled data.",
+  difficulty: "hard",
+  customer: "Keystone Insurance",
+  role: "Your AI drafts claim-adjuster summary notes. The pilot (8 adjusters) loved it. Go-wide is one approval away — from a stakeholder who wants proof.",
+  slack: {
+    from: "Marcus Boyd — VP Claims (with Risk cc'd)",
+    avatar: "MB",
+    text: "The team loves the drafting tool and I want it on all 200 adjusters next quarter. But before I sign, Risk is asking the obvious question and I don't have an answer: how do we actually KNOW it's accurate enough to trust? What's the error rate, and what happens when it's wrong? Give me something I can take to the risk committee.",
+  },
+  artifacts: [
+    {
+      kind: "doc",
+      label: "context · what the tool does and what you have",
+      title: "Pilot facts",
+      lines: [
+        "The tool reads a claim file (notes, photos metadata, prior correspondence) and drafts the adjuster's summary + recommended next action.",
+        "An adjuster reviews and edits every draft before it's saved — today. At 200-person scale, leadership wants less editing.",
+        "There is NO labeled 'correct answer' dataset. 'Good' is partly subjective and varies by adjuster.",
+        "Errors are not equal: a missed coverage exclusion or a wrong payout recommendation is severe; an awkward sentence is not.",
+        "Pilot signal so far: a 4.6/5 thumbs rating and 'it saves me 20 minutes a claim'. That's satisfaction, not accuracy.",
+        "Regulated context: claim decisions can be audited; bias across protected classes is a live risk.",
+      ],
+    },
+    {
+      kind: "log",
+      label: "from the risk committee pre-read · the questions you must answer",
+      lines: [
+        "RC-1: What's the measured error rate, by error severity — not a satisfaction score?",
+        "RC-2: How was that measured, on how many cases, and is the sample representative of our real claim mix?",
+        "RC-3: What is the failure mode when it's wrong, and what catches it before money goes out?",
+        "RC-4: How will you keep measuring after launch and when the model or prompts change?",
+        "RC-5: Any evidence of biased or inconsistent recommendations across similar claims?",
+      ],
+    },
+  ],
+  prompts: {
+    scope: {
+      label: "1 — Define 'good enough'",
+      hint: "Before measuring anything: what does 'accurate enough to trust' actually mean here, who decides the bar, and how do you turn a fuzzy/subjective 'good summary' into something you can grade? Define the error taxonomy (severe vs. cosmetic) and the metric that matters to Risk — not a thumbs score.",
+      placeholder:
+        "What 'good enough' means + who sets the bar: ...\nError taxonomy (severity tiers): ...\nThe metric(s) Risk actually cares about: ...",
+    },
+    approach: {
+      label: "2 — Design the eval with no ground truth",
+      hint: "You have no labeled data and 'correct' is partly subjective. How do you actually measure quality? (Think: building a representative eval set from real claims, expert human review + adjudication, where LLM-as-judge helps and where it doesn't, inter-rater agreement, sample size to make a claim, and testing for bias across protected classes — RC-5.)",
+      placeholder:
+        "Building a representative eval set: ...\nHow you grade (human review / LLM-judge / calibration): ...\nSample size & representativeness: ...\nBias / consistency testing: ...",
+    },
+    production: {
+      label: "3 — Make trust durable at scale",
+      hint: "One eval is a snapshot. How do you keep proving it as you scale to 200 and as prompts/models change — and how do you contain the severe errors (RC-3/RC-4)? Give Marcus a staged rollout tied to measured numbers and a guardrail for the high-severity failure modes, plus what you bring to the risk committee.",
+      placeholder:
+        "Ongoing measurement / regression evals on changes: ...\nGuardrails for severe errors (human-in-the-loop where it matters): ...\nStaged rollout tied to metrics: ...\nWhat I bring to the risk committee: ...",
+    },
+  },
+  graderBrief: `Customer: Keystone Insurance. An AI tool drafts claim-adjuster summary notes; the 8-person pilot loves it (4.6/5, saves ~20 min/claim) and VP Claims (Marcus) wants to roll out to all 200 adjusters, but Risk won't approve without proof of accuracy. The candidate must design how to PROVE the system is good enough — with NO labeled ground-truth dataset, partly-subjective quality, unequal error costs (a missed coverage exclusion or wrong payout is severe; an awkward sentence is not), in a regulated, auditable, bias-sensitive context.
+The risk committee's questions: RC-1 measured error rate by severity (not satisfaction); RC-2 how measured, sample size, representativeness of the real claim mix; RC-3 failure mode when wrong and what catches it before money moves; RC-4 ongoing measurement after launch and when model/prompts change; RC-5 evidence on bias/consistency across similar claims and protected classes.
+Reward: distinguishing satisfaction from accuracy; defining an explicit error taxonomy with severity tiers and a metric tied to severe-error rate rather than a thumbs score; setting the bar WITH Risk/the business, not unilaterally; building a representative eval set sampled from the real claim mix (not cherry-picked) with a defensible sample size; expert human review with adjudication and inter-rater agreement; using LLM-as-judge only where calibrated against human labels and being honest about where it doesn't work; explicit bias/consistency testing across protected classes and similar-claim pairs; keeping a human in the loop for high-severity decisions while reducing editing on low-severity drafting; regression evals that run on every prompt/model change; production monitoring (severe-error sampling/audits, drift); and a staged rollout gated on measured numbers, with a clear risk-committee deliverable.
+Penalize: leaning on the 4.6/5 satisfaction score as proof, claiming an accuracy number with no methodology or sample, 'we'll just eval it' hand-waving, ignoring error-severity weighting, ignoring bias, treating one eval as permanent, or full automation with no human gate on severe/payout decisions.`,
+  dimensions: [
+    "Defining 'good enough' & error taxonomy",
+    "Eval design without ground truth",
+    "Bias & representativeness",
+    "Ongoing measurement & regression",
+    "Staged rollout & stakeholder trust",
+  ],
+  mockChecks: [
+    {
+      keywords: ["satisfaction", "thumbs", "4.6", "not accuracy", "severity", "taxonomy", "error rate", "good enough", "bar", "with risk"],
+      strength: "Separated satisfaction from accuracy and defined a severity-weighted error metric with the bar set alongside Risk.",
+      redFlag: "Leaned on the 4.6/5 satisfaction score as if it were proof of accuracy — exactly what Risk is pushing back on.",
+    },
+    {
+      keywords: ["eval set", "representative", "sample", "real claim", "human review", "adjudicat", "ground truth", "label", "llm-as-judge", "llm as judge", "calibrat", "inter-rater", "agreement"],
+      strength: "Designed a real eval with no ground truth: representative sample, expert review/adjudication, calibrated judging.",
+      redFlag: "No credible measurement method — an accuracy claim with no representative eval set or methodology won't survive the committee.",
+    },
+    {
+      keywords: ["bias", "protected", "fairness", "consistency", "similar claim", "disparate", "audit"],
+      strength: "Tested for bias and consistency across protected classes and similar claims (RC-5).",
+      redFlag: "Ignored bias/consistency — a regulated, auditable claims process can't skip fairness testing.",
+    },
+    {
+      keywords: ["regression", "ongoing", "monitor", "drift", "every change", "re-run", "rerun", "after launch", "production"],
+      strength: "Made measurement durable: regression evals on every change + production monitoring, not a one-time snapshot.",
+      redFlag: "Treated one eval as permanent — nothing re-measures when prompts/models change or in production.",
+    },
+    {
+      keywords: ["human", "in the loop", "severe", "payout", "guardrail", "staged", "gate", "rollout", "committee", "high-severity"],
+      strength: "Kept humans on severe/payout decisions and staged the rollout gated on measured numbers.",
+      redFlag: "No human gate on severe decisions or metric-gated rollout — Risk won't sign and money could move on a bad draft.",
+    },
+  ],
+  portfolioLines: {
+    good: "Built the trust case to scale an insurance claims-drafting AI from pilot to 200 users: a severity-weighted error taxonomy, a representative no-ground-truth eval (expert adjudication + calibrated LLM-judging), bias/consistency testing, regression + production monitoring, and a metric-gated staged rollout for the risk committee — Keystone Insurance FDE simulation.",
+    learning:
+      "Practiced FDE evaluation design: proving an AI feature is 'good enough' without labeled data — error taxonomies, representative evals, bias testing, and metric-gated rollout.",
+  },
+};
+
+export const SCENARIOS: Scenario[] = [level0, level1, level2, level3, level4, level5];
 
 export function getScenario(id: string): Scenario | undefined {
   return SCENARIOS.find((s) => s.id === id);
