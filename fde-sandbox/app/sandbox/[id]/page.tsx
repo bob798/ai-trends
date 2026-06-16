@@ -2,6 +2,7 @@
 
 import { use, useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import { notFound } from "next/navigation";
 import { getScenario, SCENARIOS, type Artifact, type Scenario } from "@/lib/scenarios";
 import type { FollowUpResult, Grade } from "@/lib/grader";
 import { loadDraft, recordResult, saveDraft } from "@/lib/progress";
@@ -20,16 +21,7 @@ export default function LevelPage({
   const { id } = use(params);
   const scenario = getScenario(id);
 
-  if (!scenario) {
-    return (
-      <main className="mx-auto max-w-3xl px-6 py-16">
-        <p className="text-zinc-400">Unknown level.</p>
-        <Link href="/sandbox" className="text-amber-400 hover:underline">
-          ← back to engagements
-        </Link>
-      </main>
-    );
-  }
+  if (!scenario) notFound();
   return <Player scenario={scenario} />;
 }
 
